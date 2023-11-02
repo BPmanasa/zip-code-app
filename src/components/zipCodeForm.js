@@ -22,9 +22,7 @@ const ZipCodeForm = ({ setLocation }) => {
     setLoading(true);
     setError("");
     if (!/^\d{6}$/.test(zipCode)) {
-      setError(
-        "Invalid zip code format. Please enter a valid 6-digit zip code."
-      );
+      setError("Zip code not found. Please check the zip code and try again.");
       setLoading(false);
       return;
     }
@@ -45,7 +43,16 @@ const ZipCodeForm = ({ setLocation }) => {
       setData(data);
     } catch (error) {
       console.error("API Error:", error);
-      setError("Error fetching data. Please check the zip code and try again.");
+      if (error.response) {
+        // Server returned an error
+        setError("Server error. Please try again later.");
+      } else if (error.request) {
+        // No response from the server
+        setError("Network error. Please check your internet connection.");
+      } else {
+        // Other errors
+        setError("An error occurred. Please try again.");
+      }
       enqueueSnackbar("Error fetching data", { variant: "error" });
     } finally {
       setLoading(false);
@@ -76,11 +83,14 @@ const ZipCodeForm = ({ setLocation }) => {
         </div>
       </form>
       {loading && (
-        <Box>
+        <Box
+          style={{
+            color: "black",
+            margin: "16px",
+          }}
+        >
           <CircularProgress />
-          <Typography variant="body1" style={{ color: "black" }}>
-            Loading Data...
-          </Typography>
+          <Typography variant="body1">Fetching Data...</Typography>
         </Box>
       )}
       {error && (
